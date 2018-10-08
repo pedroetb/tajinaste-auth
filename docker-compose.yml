@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  tajinaste-auth:
+    image: pedroetb/tajinaste-auth:latest
+    environment:
+      - PORT
+      - EXPIRY_MINUTES
+      - PRIVATE_JWK
+      - PGHOST
+      - PGPORT
+      - PGUSER
+      - PGPASSWORD
+      - PGDATABASE
+    networks:
+      net:
+        aliases:
+          - auth
+    ports:
+      - target: ${PORT}
+        published: ${PUBLISHED_PORT}
+        mode: host
+
+networks:
+  net:
+    name: tajinaste-net

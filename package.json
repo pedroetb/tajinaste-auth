@@ -1,0 +1,28 @@
+{
+  "name": "tajinaste-auth",
+  "version": "1.0.0",
+  "description": "Tajinaste authentication service",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pedroetb/tajinaste-auth.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Pedro Trujillo",
+  "contributors": [
+    {
+      "name": "Pedro Trujillo",
+      "email": "pedroetb@gmail.com"
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "jsonwebtoken": "^8.3.0",
+    "jwk-to-pem": "^2.0.0",
+    "pg": "^7.5.0"
+  }
+}
