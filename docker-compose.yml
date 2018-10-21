@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   tajinaste-auth:
-    image: pedroetb/tajinaste-auth:latest
+    image: pedroetb/tajinaste-auth:${IMAGE_TAG:-latest}
     environment:
       - PORT
       - EXPIRY_MINUTES
@@ -13,14 +13,31 @@ services:
       - PGPASSWORD
       - PGDATABASE
     networks:
-      net:
+      tajinaste-net:
         aliases:
           - auth
-    ports:
-      - target: ${PORT}
-        published: ${PUBLISHED_PORT}
-        mode: host
+      traefik-net:
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        traefik.port: "${PORT}"
+        traefik.docker.network: traefik-net
+        traefik.frontend.rule: Host:tajinaste.${PUBLIC_HOSTNAME};PathPrefixStrip:/auth
+        traefik.backend: tajinaste-auth
+      restart_policy:
+        delay: 10s
+        window: 1m
+      resources:
+        limits:
+          cpus: '2'
+          memory: 128M
+        reservations:
+          memory: 103M
 
 networks:
-  net:
+  tajinaste-net:
     name: tajinaste-net
+
+  traefik-net:
+    external: true
