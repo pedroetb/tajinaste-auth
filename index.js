@@ -25,6 +25,9 @@ app.use(cors());
 app.route('/login')
 	.post(loginCallback);
 
+app.route('/change-password')
+	.post(changePasswordCallback);
+
 app.listen(port);
 
 const pool = new Pool();
@@ -40,7 +43,7 @@ function loginCallback(req, res) {
 	const password = req.body.password;
 
 	validateEmailAndPassword(email, password)
-		.then(onValidUser.bind(null, res), () => res.sendStatus(401));
+		.then(onValidUserReturnToken.bind(null, res), () => res.sendStatus(401));
 }
 
 function validateEmailAndPassword(email, password) {
@@ -69,7 +72,7 @@ function validateEmailAndPassword(email, password) {
 				if (result) {
 					resolve(result);
 				} else {
-					console.error('Got no user data', result);
+					console.error('Got no user data', res);
 					reject(res);
 				}
 			});
@@ -77,7 +80,7 @@ function validateEmailAndPassword(email, password) {
 	});
 }
 
-function onValidUser(res, validUserData) {
+function onValidUserReturnToken(res, validUserData) {
 
 	const role = validUserData.role;
 	const email = validUserData.email;
@@ -97,5 +100,52 @@ function onValidUser(res, validUserData) {
 		token: jwtBearerToken,
 		expiresIn: expiry,
 		role, email, name, photo
+	});
+}
+
+function changePasswordCallback(req, res) {
+
+	const email = req.body.email;
+	const oldPassword = req.body.oldPassword;
+	const newPassword = req.body.newPassword;
+
+	validateEmailAndPassword(email, oldPassword)
+		.then(onValidUserChangePassword.bind(null, newPassword))
+		.then(() => res.sendStatus(200))
+		.catch(() => res.sendStatus(401));
+}
+
+function onValidUserChangePassword(newPassword, validUserData) {
+
+	const email = validUserData.email;
+
+	return new Promise((resolve, reject) => {
+
+		pool.connect((err, client, done) => {
+
+			if (err) {
+				console.error('Database connection error', err);
+				reject(err);
+				return;
+			}
+
+			client.query(`UPDATE auth.users SET password = '${newPassword}' WHERE email = '${email}'`, (err, res) => {
+
+				done();
+
+				if (err) {
+					console.error(err.stack);
+					reject(err);
+					return;
+				}
+
+				if (res.rowCount === 1) {
+					resolve(res);
+				} else {
+					console.error('User not found', res);
+					reject(res);
+				}
+			});
+		});
 	});
 }
