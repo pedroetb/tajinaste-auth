@@ -9,4 +9,4 @@ RUN npm i
 ARG PORT=3000
 EXPOSE ${PORT}
 
-CMD ["npm", "start"]
+CMD ["node", "index"]

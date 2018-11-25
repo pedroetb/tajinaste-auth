@@ -30,10 +30,10 @@ services:
         window: 1m
       resources:
         limits:
-          cpus: '2'
+          cpus: '0.5'
           memory: 128M
         reservations:
-          memory: 103M
+          memory: 32M
 
 networks:
   tajinaste-net:
