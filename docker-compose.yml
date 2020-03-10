@@ -2,42 +2,51 @@ version: '3.7'
 
 services:
   tajinaste-auth:
-    image: pedroetb/tajinaste-auth:${IMAGE_TAG:-latest}
+    image: ${IMAGE_NAME:-pedroetb/tajinaste-auth}:${IMAGE_TAG:-latest}
     environment:
-      - PORT
-      - EXPIRY_MINUTES
-      - PRIVATE_JWK
-      - PGHOST
-      - PGPORT
-      - PGUSER
-      - PGPASSWORD
-      - PGDATABASE
+      PORT:
+      EXPIRY_MINUTES:
+      PRIVATE_JWK:
+      PGHOST:
+      PGPORT:
+      PGUSER:
+      PGPASSWORD:
+      PGDATABASE:
     networks:
       tajinaste-net:
         aliases:
-          - auth
+          - ${TAJINASTE_NET_ALIAS:-auth}
       traefik-net:
     deploy:
       mode: replicated
-      replicas: 1
-      labels:
-        traefik.port: "${PORT}"
-        traefik.docker.network: traefik-net
-        traefik.frontend.rule: Host:tajinaste.${PUBLIC_HOSTNAME};PathPrefixStrip:/auth
-        traefik.backend: tajinaste-auth
+      replicas: ${REPLICAS:-1}
       restart_policy:
-        delay: 10s
-        window: 1m
+        delay: ${RESTART_DELAY:-10s}
+      update_config:
+        delay: ${UPDATE_DELAY:-1m}
+      labels:
+        traefik.enable: 'true'
+        traefik.http.routers.tajinaste-auth.entrypoints: ${TRAEFIK_ENTRYPOINT:-https}
+        traefik.http.routers.tajinaste-auth.tls.certresolver: ${TRAEFIK_CERTRESOLVER:-default}
+        traefik.http.routers.tajinaste-auth.rule: Host(`${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}`) && PathPrefix(`${TRAEFIK_PATHPREFIX}`)
+        traefik.http.middlewares.tajinaste-auth-prefix.stripprefix.prefixes: ${TRAEFIK_PATHPREFIX}
+        traefik.http.routers.tajinaste-auth.middlewares: tajinaste-auth-prefix
+        traefik.http.services.tajinaste-auth.loadbalancer.server.port: ${PORT}
       resources:
         limits:
-          cpus: '0.5'
-          memory: 128M
+          cpus: '${RESOURCES_LIMITS_CPUS:-0.5}'
+          memory: ${RESOURCES_LIMITS_MEMORY:-64M}
         reservations:
-          memory: 32M
+          cpus: '${RESOURCES_RESERVATIONS_CPUS:-0.001}'
+          memory: ${RESOURCES_RESERVATIONS_MEMORY:-16M}
 
 networks:
   tajinaste-net:
-    name: tajinaste-net
+    name: ${TAJINASTE_NET_NAME:-tajinaste-net}
+    driver: ${TAJINASTE_NET_DRIVER:-overlay}
+    attachable: ${TAJINASTE_NET_ATTACHABLE:-true}
 
   traefik-net:
+    name: ${TRAEFIK_NET_NAME:-traefik-net}
+    driver: ${TRAEFIK_NET_DRIVER:-overlay}
     external: true
