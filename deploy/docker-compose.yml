@@ -3,6 +3,12 @@ version: '3.7'
 services:
   tajinaste-auth:
     image: ${IMAGE_NAME:-pedroetb/tajinaste-auth}:${IMAGE_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: ${DOCKERFILE:-Dockerfile}
+      args:
+        NODE_IMAGE_TAG:
+        PORT:
     environment:
       PORT:
       EXPIRY_MINUTES:
