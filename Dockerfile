@@ -3,7 +3,7 @@ FROM node:${NODE_IMAGE_TAG}
 
 LABEL maintainer="pedroetb@gmail.com"
 
-COPY package.json package-lock.json index.js /app
+COPY package.json package-lock.json index.js /app/
 
 WORKDIR /app
 RUN npm i
