@@ -1,0 +1,23 @@
+include:
+  - project: 'pedroetb-projects/gitlab-ci-templates'
+    ref: master
+    file: '/packaging.yml'
+  - project: 'pedroetb-projects/gitlab-ci-templates'
+    ref: master
+    file: '/packaging-arm.yml'
+  - project: 'pedroetb-projects/gitlab-ci-templates'
+    ref: master
+    file: '/deployment.yml'
+
+stages:
+  - pre-package
+  - package
+  - post-package
+  - deploy
+
+.deploy:
+  variables:
+    STACK: tajinaste
+    SERVICES_TO_CHECK: ${STACK}_${CI_PROJECT_NAME}
+  environment:
+    url: https://tajinaste.${DD_TRAEFIK_DOMAIN}/auth
