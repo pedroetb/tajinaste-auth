@@ -18,6 +18,3 @@ stages:
 .deploy:
   variables:
     STACK: tajinaste
-    SERVICES_TO_CHECK: ${STACK}_${CI_PROJECT_NAME}
-  environment:
-    url: https://tajinaste.${DD_TRAEFIK_DOMAIN}/auth

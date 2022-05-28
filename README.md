@@ -1,23 +1,33 @@
 # Tajinaste Auth
 
+Authentication provider service for [Tajinaste Manager](https://github.com/pedroetb/tajinaste-manager).
+
 ## Variables
 
 ### Preset variables
 
+These variables already have a default value set, but you can overwrite it in your environment before running the service:
+
+* **PGHOST**: Remote PostgreSQL database host (default: `db`).
+* **PGPORT**: Remote PostgreSQL database port (default: `5432`).
+* **PGUSER**: Remote PostgreSQL database user (default: `postgres`).
+* **PGDATABASE**: Remote PostgreSQL database name (default: `tajinaste`).
+* **EXPIRY_MINUTES**: Generated tokens lifetime, expressed in minutes (default: `240`, 4 hours).
 
 ### Secret variables
 
 You must set these variables in your environment before running the service:
-* **PGPASSWORD**: PostgreSQL database password for user *PGUSER*.
+
+* **PGPASSWORD**: PostgreSQL database password for user *PGUSER* (default: `changeme`).
 * **PRIVATE_JWK**: Private key used to sign the JWT provided to users. It must be a single-lined valid JWK.
 
-## Key generation
+## Key generation (JWK)
 
 To generate a public/private key pair in JWK format, use a utility like [latchset/jose](https://github.com/latchset/jose).
 
 Install and use it from shell:
 
-```
+```sh
 apt install jose
 
 jose jwk gen -i '{"alg": "RS256"}' -o rsa.jwk
