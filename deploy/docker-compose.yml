@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.9'
 
 services:
   tajinaste-auth:
@@ -8,9 +8,7 @@ services:
       dockerfile: ${DOCKERFILE:-Dockerfile}
       args:
         NODE_IMAGE_TAG:
-        PORT:
     environment:
-      PORT:
       EXPIRY_MINUTES:
       PRIVATE_JWK:
       PGHOST:
@@ -33,11 +31,10 @@ services:
       labels:
         traefik.enable: 'true'
         traefik.http.routers.tajinaste-auth.entrypoints: ${TRAEFIK_ENTRYPOINT:-https}
-        traefik.http.routers.tajinaste-auth.tls.certresolver: ${TRAEFIK_CERTRESOLVER:-default}
         traefik.http.routers.tajinaste-auth.rule: Host(`${TRAEFIK_SUBDOMAIN}.${TRAEFIK_DOMAIN}`) && PathPrefix(`${TRAEFIK_PATHPREFIX}`)
-        traefik.http.middlewares.tajinaste-auth-prefix.stripprefix.prefixes: ${TRAEFIK_PATHPREFIX}
-        traefik.http.routers.tajinaste-auth.middlewares: tajinaste-auth-prefix
-        traefik.http.services.tajinaste-auth.loadbalancer.server.port: ${PORT}
+        traefik.http.middlewares.tajinaste-auth-strip-prefix.stripprefix.prefixes: ${TRAEFIK_PATHPREFIX}
+        traefik.http.routers.tajinaste-auth.middlewares: tajinaste-auth-strip-prefix
+        traefik.http.services.tajinaste-auth.loadbalancer.server.port: ${TRAEFIK_PORT}
       resources:
         limits:
           cpus: '${RESOURCES_LIMITS_CPUS:-0.5}'

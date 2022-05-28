@@ -1,19 +1,19 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const jwkToPem = require('jwk-to-pem');
-const { Pool } = require('pg');
+const express = require('express'),
+	bodyParser = require('body-parser'),
+	cors = require('cors'),
+	jwt = require('jsonwebtoken'),
+	jwkToPem = require('jwk-to-pem'),
+	{ Pool } = require('pg');
 
-const port = process.env.PORT || 3000;
-const expiry = process.env.EXPIRY_MINUTES || 240;
-const jwk = process.env.PRIVATE_JWK;
+const packageJson = require('./package.json'),
+	port = process.env.PORT || 3000,
+	expiry = process.env.EXPIRY_MINUTES || 240,
+	jwk = process.env.PRIVATE_JWK;
 
 if (!jwk) {
 	console.error('You must declare "PRIVATE_JWK" env. variable, using a private JWK object as a single line string:');
 	console.error('  $ export PRIVATE_JWK=\'{ "alg": "RS256", ... }\'');
-	process.exitCode = 1;
-	return;
+	process.exit(1);
 }
 const rsaPrivateKey = jwkToPem(JSON.parse(jwk), { private: true });
 
@@ -22,25 +22,32 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
+app.route('/health')
+	.get((_req, res) => res.sendStatus(200));
+
 app.route('/login')
 	.post(loginCallback);
 
 app.route('/change-password')
 	.post(changePasswordCallback);
 
-app.listen(port);
+app.listen(port, () => {
+
+	console.log('Tajinaste Auth v%s', packageJson.version);
+	console.log('Listening on port %d', port);
+});
 
 const pool = new Pool();
 
-pool.on('error', (err, client) => {
+pool.on('error', (err) => {
 
 	console.error('Unexpected error on idle client', err);
 });
 
 function loginCallback(req, res) {
 
-	const email = req.body.email;
-	const password = req.body.password;
+	const email = req.body.email,
+		password = req.body.password;
 
 	validateEmailAndPassword(email, password)
 		.then(onValidUserReturnToken.bind(null, res), () => res.sendStatus(401));
@@ -50,21 +57,21 @@ function validateEmailAndPassword(email, password) {
 
 	return new Promise((resolve, reject) => {
 
-		pool.connect((err, client, done) => {
+		pool.connect((connectErr, client, done) => {
 
-			if (err) {
-				console.error('Database connection error', err);
-				reject(err);
+			if (connectErr) {
+				console.error('Database connection error', connectErr);
+				reject(connectErr);
 				return;
 			}
 
-			client.query(`SELECT * FROM login('${email}', '${password}')`, (err, res) => {
+			client.query(`SELECT * FROM login('${email}', '${password}')`, (queryErr, res) => {
 
 				done();
 
-				if (err) {
-					console.error(err.stack);
-					reject(err);
+				if (queryErr) {
+					console.error(queryErr.stack);
+					reject(queryErr);
 					return;
 				}
 
@@ -82,11 +89,11 @@ function validateEmailAndPassword(email, password) {
 
 function onValidUserReturnToken(res, validUserData) {
 
-	const role = validUserData.role;
-	const email = validUserData.email;
-	const uuid = validUserData.uuid;
-	const name = validUserData.name;
-	const photo = validUserData.photo;
+	const role = validUserData.role,
+		email = validUserData.email,
+		uuid = validUserData.uuid,
+		name = validUserData.name,
+		photo = validUserData.photo;
 
 	const jwtBearerToken = jwt.sign({
 		role, email
@@ -105,9 +112,9 @@ function onValidUserReturnToken(res, validUserData) {
 
 function changePasswordCallback(req, res) {
 
-	const email = req.body.email;
-	const oldPassword = req.body.oldPassword;
-	const newPassword = req.body.newPassword;
+	const email = req.body.email,
+		oldPassword = req.body.oldPassword,
+		newPassword = req.body.newPassword;
 
 	validateEmailAndPassword(email, oldPassword)
 		.then(onValidUserChangePassword.bind(null, newPassword))
@@ -121,21 +128,21 @@ function onValidUserChangePassword(newPassword, validUserData) {
 
 	return new Promise((resolve, reject) => {
 
-		pool.connect((err, client, done) => {
+		pool.connect((connectErr, client, done) => {
 
-			if (err) {
-				console.error('Database connection error', err);
-				reject(err);
+			if (connectErr) {
+				console.error('Database connection error', connectErr);
+				reject(connectErr);
 				return;
 			}
 
-			client.query(`UPDATE auth.users SET password = '${newPassword}' WHERE email = '${email}'`, (err, res) => {
+			client.query(`UPDATE auth.users SET password = '${newPassword}' WHERE email = '${email}'`, (queryErr, res) => {
 
 				done();
 
-				if (err) {
-					console.error(err.stack);
-					reject(err);
+				if (queryErr) {
+					console.error(queryErr.stack);
+					reject(queryErr);
 					return;
 				}
 
