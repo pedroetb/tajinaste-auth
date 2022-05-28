@@ -2,6 +2,9 @@
 
 Authentication provider service for [Tajinaste Manager](https://github.com/pedroetb/tajinaste-manager).
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/-Sponsor-fafbfc?logo=GitHub%20Sponsors)](https://github.com/sponsors/pedroetb)
+
 ## Variables
 
 ### Preset variables
@@ -35,3 +38,9 @@ jose jwk pub -i rsa.jwk -o rsa.jwk.pub
 
 # now rsa.jwk.pub contains the public key, and rsa.jwk the private key
 ```
+
+## License
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+This project is released under the [MIT License](LICENSE).
